@@ -1,0 +1,490 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <title>Copado Builder — Build Process Overview</title>
+  <style>
+    :root {
+      --ink: #1a1f36;
+      --muted: #5b6475;
+      --line: #e6e9ef;
+      --accent: #0b6bcb;
+      --accent-soft: #e8f2fc;
+      --surface: #f7f8fb;
+      --ok: #0f6b3a;
+    }
+
+    * { box-sizing: border-box; }
+
+    body {
+      margin: 0;
+      color: var(--ink);
+      font-family: "Segoe UI", "Helvetica Neue", Helvetica, Arial, sans-serif;
+      font-size: 11pt;
+      line-height: 1.45;
+      background: #eef1f6;
+    }
+
+    .page {
+      max-width: 8.5in;
+      margin: 1.25rem auto;
+      padding: 0.85in 0.9in;
+      background: #fff;
+      box-shadow: 0 8px 28px rgba(26, 31, 54, 0.08);
+    }
+
+    .toolbar {
+      max-width: 8.5in;
+      margin: 1rem auto 0;
+      padding: 0 0.5rem;
+      display: flex;
+      gap: 0.5rem;
+      flex-wrap: wrap;
+      align-items: center;
+      justify-content: space-between;
+      font-family: inherit;
+    }
+
+    .toolbar p {
+      margin: 0;
+      color: var(--muted);
+      font-size: 0.9rem;
+    }
+
+    .toolbar a,
+    .toolbar button {
+      appearance: none;
+      border: 1px solid #c9d2e0;
+      background: #fff;
+      color: var(--accent);
+      font: inherit;
+      font-weight: 600;
+      font-size: 0.9rem;
+      padding: 0.45rem 0.85rem;
+      border-radius: 6px;
+      text-decoration: none;
+      cursor: pointer;
+    }
+
+    .toolbar a.primary,
+    .toolbar button.primary {
+      background: var(--accent);
+      border-color: var(--accent);
+      color: #fff;
+    }
+
+    header.doc-header {
+      border-bottom: 3px solid var(--accent);
+      padding-bottom: 0.85rem;
+      margin-bottom: 1.25rem;
+    }
+
+    .eyebrow {
+      margin: 0 0 0.35rem;
+      color: var(--accent);
+      font-size: 0.75rem;
+      font-weight: 700;
+      letter-spacing: 0.06em;
+      text-transform: uppercase;
+    }
+
+    h1 {
+      margin: 0 0 0.45rem;
+      font-size: 1.55rem;
+      line-height: 1.2;
+      font-weight: 700;
+    }
+
+    .meta {
+      display: grid;
+      grid-template-columns: 1fr 1fr;
+      gap: 0.35rem 1rem;
+      margin: 0.75rem 0 0;
+      padding: 0.65rem 0.75rem;
+      background: var(--surface);
+      border-radius: 8px;
+      font-size: 0.92rem;
+    }
+
+    .meta div span {
+      display: block;
+      color: var(--muted);
+      font-size: 0.72rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    h2 {
+      margin: 1.35rem 0 0.55rem;
+      font-size: 1.05rem;
+      color: var(--accent);
+      border-bottom: 1px solid var(--line);
+      padding-bottom: 0.25rem;
+    }
+
+    h3 {
+      margin: 0.9rem 0 0.35rem;
+      font-size: 0.98rem;
+    }
+
+    p { margin: 0.45rem 0; }
+
+    .lead {
+      font-size: 1.02rem;
+    }
+
+    .flow {
+      margin: 0.75rem 0;
+      padding: 0.7rem 0.85rem;
+      background: var(--accent-soft);
+      border-left: 4px solid var(--accent);
+      border-radius: 0 8px 8px 0;
+      font-weight: 650;
+      letter-spacing: 0.01em;
+    }
+
+    ol, ul {
+      margin: 0.4rem 0 0.6rem;
+      padding-left: 1.25rem;
+    }
+
+    li { margin: 0.25rem 0; }
+
+    code, .mono {
+      font-family: ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+      font-size: 0.88em;
+      background: #f1f4f9;
+      padding: 0.05em 0.3em;
+      border-radius: 3px;
+    }
+
+    pre {
+      margin: 0.55rem 0;
+      padding: 0.7rem 0.85rem;
+      background: #1a1f36;
+      color: #e8ecf5;
+      border-radius: 8px;
+      overflow-x: auto;
+      font-size: 0.82rem;
+      line-height: 1.4;
+    }
+
+    pre code {
+      background: transparent;
+      color: inherit;
+      padding: 0;
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse;
+      margin: 0.55rem 0 0.75rem;
+      font-size: 0.92rem;
+    }
+
+    th, td {
+      border: 1px solid var(--line);
+      padding: 0.4rem 0.5rem;
+      vertical-align: top;
+      text-align: left;
+    }
+
+    th {
+      background: var(--surface);
+      color: var(--muted);
+      font-size: 0.72rem;
+      text-transform: uppercase;
+      letter-spacing: 0.04em;
+    }
+
+    tr:nth-child(even) td { background: #fcfdff; }
+
+    .callout {
+      margin: 0.75rem 0;
+      padding: 0.65rem 0.8rem;
+      border: 1px solid #d7e6f7;
+      background: #f5f9fd;
+      border-radius: 8px;
+    }
+
+    .callout strong { color: var(--accent); }
+
+    footer {
+      margin-top: 1.5rem;
+      padding-top: 0.75rem;
+      border-top: 1px solid var(--line);
+      color: var(--muted);
+      font-size: 0.85rem;
+    }
+
+    @media print {
+      body { background: #fff; }
+      .toolbar { display: none !important; }
+      .page {
+        margin: 0;
+        padding: 0.55in 0.65in;
+        box-shadow: none;
+        max-width: none;
+      }
+      a { color: inherit; text-decoration: none; }
+      h2 { break-after: avoid; }
+      table, .callout, .flow, pre { break-inside: avoid; }
+    }
+
+    @page {
+      size: letter;
+      margin: 0.55in;
+    }
+  </style>
+</head>
+<body>
+  <div class="toolbar">
+    <p>Copado Builder · internal process overview · ~2 pages</p>
+    <div>
+      <button class="primary" type="button" onclick="window.print()">Print / Save as PDF</button>
+      <a id="pdf-link" href="Copado-Builder-Build-Process-Overview.pdf" download>Download PDF</a>
+      <a href="MANAGER-OVERVIEW-Build-Process.md" download>Download Markdown</a>
+    </div>
+  </div>
+
+  <article class="page">
+    <header class="doc-header">
+      <p class="eyebrow">Internal · Copado Builder POC</p>
+      <h1>How We Built Copado Builder</h1>
+      <p>Process overview for managers and stakeholders</p>
+      <div class="meta">
+        <div><span>Audience</span> Manager / stakeholders</div>
+        <div><span>Length</span> About 2 pages</div>
+        <div><span>Purpose</span> Design approach, metadata, packaging &amp; deploy options</div>
+        <div><span>Date</span> July 23, 2026</div>
+      </div>
+    </header>
+
+    <h2>1. What we built</h2>
+    <p class="lead">
+      <strong>Copado Builder</strong> is a Lightning app that turns a natural-language request into a
+      Copado User Story, generates Salesforce metadata with Copado AI, then
+      <strong>Deploys</strong> that package into a Dev org and <strong>Commits</strong> it to the story’s
+      feature branch — with guardrails (no Production, confirmation before risky steps, audited actions).
+    </p>
+    <p class="flow">Chat → Improve / Create Story → Build → Deploy → Commit → (optional) Validate</p>
+    <p>
+      Work happens in a local Salesforce DX (SFDX) project, with Cursor as the coding assistant,
+      then deploys into the Copado PSA org for live testing against Copado CI/CD and Copado AI.
+    </p>
+
+    <h2>2. Initial prompts and build approach</h2>
+    <p>
+      We did <strong>not</strong> start from a blank org with hand-clicked Setup. We started from a written
+      product brief, then used Cursor to scaffold and iterate.
+    </p>
+
+    <h3>Kickoff prompt (condensed)</h3>
+    <p>The first Cursor prompt asked for a Salesforce DX project that would:</p>
+    <ol>
+      <li>Create custom objects for <strong>Session</strong>, <strong>Message</strong>, and <strong>Action</strong> (chat history + audit trail).</li>
+      <li>Build an LWC chat UI (<code>copadoBuilderChat</code>) with a status panel and action buttons.</li>
+      <li>Build Apex (<code>CopadoBuilderController</code>, <code>CopadoAiApiService</code>) so <strong>all</strong> Copado AI calls stay server-side (no API keys in the browser).</li>
+      <li>Use a Named Credential for Copado AI, with <strong>mock mode</strong> first so UI and scoring could ship before every live endpoint was wired.</li>
+      <li>Enforce guardrails: never show/deploy Production; require confirmation; require a User Story before build/deploy; log actions.</li>
+    </ol>
+    <p>
+      The same brief defined the UX (“What do you want to build?”, story score, Improve / Create / Build / Deploy)
+      and the phased plan: <strong>mock story + scoring first</strong>, then real Copado AI and Copado job templates.
+    </p>
+
+    <h3>How we worked after that</h3>
+    <table>
+      <thead>
+        <tr><th>Phase</th><th>What we did</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>Scaffold</td><td>SFDX project under <code>force-app/</code>, objects, LWC, Apex, app/tab</td></tr>
+        <tr><td>Integrate</td><td>Named Credential + Copado AI dialogues; create/update User Stories</td></tr>
+        <tr><td>DevOps</td><td>Job Templates / Function to deploy AI packages into Dev, then commit</td></tr>
+        <tr><td>Iterate</td><td>Incremental “updates” zips (schema then code) via Workbench while testing</td></tr>
+      </tbody>
+    </table>
+    <p>
+      Later prompts were incremental (split Deploy vs Commit, Improve Story writes back to the linked US,
+      fix commit selections for MDAPI paths, etc.) — always against the same SFDX source of truth.
+    </p>
+
+    <h2>3. Project structure and metadata types</h2>
+    <h3>Source layout (SFDX)</h3>
+    <pre><code>copado-builder/
+  force-app/main/default/   ← editable source (objects, Apex, LWC, …)
+  scripts/                  ← zip builders (MDAPI convert + package)
+  copado-functions/         ← Function + Job Template docs (not in Salesforce zip)
+  docs/                     ← process / install notes</code></pre>
+    <p>
+      Salesforce accepts <strong>source format</strong> (SFDX) or <strong>Metadata API (MDAPI)</strong> zips.
+      We develop in SFDX; for Workbench we convert to MDAPI and zip.
+    </p>
+
+    <h3>Metadata we use — and why</h3>
+    <table>
+      <thead>
+        <tr><th>Type</th><th>Examples</th><th>Why</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Custom Objects</strong></td>
+          <td><code>AI_Builder_Session__c</code>, Message, Action</td>
+          <td>Persist chats, scores, package JSON, job ids; audit every action</td>
+        </tr>
+        <tr>
+          <td><strong>Custom Metadata</strong></td>
+          <td><code>Copado_Builder_Settings__mdt</code></td>
+          <td>Org config (mock vs live, job template names) without hardcoding</td>
+        </tr>
+        <tr>
+          <td><strong>User prefs object</strong></td>
+          <td><code>Copado_Builder_User_Preference__c</code></td>
+          <td>Remember preferred project / Dev environment per user</td>
+        </tr>
+        <tr>
+          <td><strong>Apex</strong></td>
+          <td>Controller, AiApiService, DevopsService (+ tests)</td>
+          <td>UI API, Copado AI HTTP, CreateExecution / User Story metadata</td>
+        </tr>
+        <tr>
+          <td><strong>LWC</strong></td>
+          <td><code>copadoBuilderChat</code></td>
+          <td>Chat + status + Build / Deploy / Commit buttons</td>
+        </tr>
+        <tr>
+          <td><strong>Aura + Quick Action</strong></td>
+          <td>Global Action wrapper</td>
+          <td>Open Builder from the Salesforce <code>+</code> menu</td>
+        </tr>
+        <tr>
+          <td><strong>App / Tab / FlexiPage</strong></td>
+          <td>Copado Builder app</td>
+          <td>First-class app entry</td>
+        </tr>
+        <tr>
+          <td><strong>Permission Set</strong></td>
+          <td><code>Copado_Builder_User</code></td>
+          <td>Access without modifying profiles</td>
+        </tr>
+        <tr>
+          <td><strong>Credentials + Remote Site</strong></td>
+          <td>Named / External Credential</td>
+          <td>Secure outbound auth; secrets stay in Setup, not in git</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <strong>Outside the Salesforce zip:</strong> Copado Function <code>builder_deploy_package</code> and Job Templates
+      (<code>builder_deploy_only</code>, <code>builder_deploy_then_commit</code>, OOTB <code>sfdx_commit_1</code>).
+      Those live in Copado Functions / Job Engine — documented under <code>copado-functions/</code>.
+    </div>
+    <p>
+      The app is a normal Salesforce DX package; Copado-native deploy/commit stays on Copado’s job engine
+      (same path UI Commit Changes uses).
+    </p>
+
+    <h2>4. How we zip and push today (Workbench)</h2>
+    <h3>Build the zips (local)</h3>
+    <pre><code>cd ~/Projects/copado-builder
+./scripts/build-updates-zips.sh</code></pre>
+    <p>That script:</p>
+    <ol>
+      <li>Runs <code>sf project convert source</code> (SFDX → MDAPI).</li>
+      <li>Assembles smaller packages:
+        <ul>
+          <li><code>copado-builder-updates-1-schema.zip</code> — object fields / CMD layout (first)</li>
+          <li><code>copado-builder-updates-2-code.zip</code> — Apex, LWC, permission set, app pieces</li>
+        </ul>
+      </li>
+      <li>Puts <code>package.xml</code> at the <strong>zip root</strong> (required for Metadata API / Workbench).</li>
+    </ol>
+    <p>
+      <strong>Why split schema vs code?</strong> New fields must land before Apex/LWC that reference them.
+      Updates zips also <strong>omit</strong> redeploying live <code>Copado_Builder_Settings.Default</code>
+      so mock/live toggles and org ids are not wiped.
+    </p>
+
+    <h3>Deploy with Workbench (current practice)</h3>
+    <ol>
+      <li>Open Workbench → log into the PSA org.</li>
+      <li><strong>migration → Deploy</strong>.</li>
+      <li>Upload <strong>schema zip first</strong>, then <strong>code zip</strong>.</li>
+      <li>Check “Single Package”; run deploy.</li>
+      <li>Hard-refresh the Copado Builder tab.</li>
+      <li>Manual once (or after credential redeploy): paste Copado AI API key into the External Credential;
+        set Job Template names on <strong>Copado Builder Settings → Default</strong>.</li>
+    </ol>
+    <p>Loop for the POC: change source → rebuild zip → Workbench → test in org.</p>
+
+    <h2>5. Other ways to push the same metadata</h2>
+    <table>
+      <thead>
+        <tr><th>Method</th><th>How</th><th>When it fits</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><strong>Salesforce CLI</strong></td>
+          <td><code>sf project deploy start --source-dir force-app</code></td>
+          <td>Day-to-day for developers; no zip needed</td>
+        </tr>
+        <tr>
+          <td><strong>GitHub Actions</strong></td>
+          <td>On push/PR: checkout → org login → deploy → optional tests</td>
+          <td>CI/CD for the Builder app; reviewable PRs</td>
+        </tr>
+        <tr>
+          <td><strong>Copado pipeline</strong></td>
+          <td>Promote this repo / MDAPI via User Story</td>
+          <td>Same governance customers use; shared environments</td>
+        </tr>
+        <tr>
+          <td><strong>Change Sets</strong></td>
+          <td>Setup upload</td>
+          <td>Poor fit for large LWC/Apex — avoid here</td>
+        </tr>
+        <tr>
+          <td><strong>Unlocked / 2GP package</strong></td>
+          <td>Version &amp; install packages</td>
+          <td>Longer-term productization</td>
+        </tr>
+      </tbody>
+    </table>
+    <div class="callout">
+      <strong>Recommendation:</strong> Workbench for hotfixes; <strong>GitHub Actions + Salesforce CLI</strong> for
+      repeatable sandbox deploys; <strong>Copado</strong> when promoting Builder through a shared pipeline.
+      Functions / Job Templates still need documented one-time setup in Copado even if Salesforce metadata is automated.
+    </div>
+
+    <h2>6. What cannot go in the zip</h2>
+    <ul>
+      <li>API keys / secrets (External Credential authentication parameters)</li>
+      <li>Live CMD values we protect (Use Mock API, Organization Id, workspace id)</li>
+      <li>Copado Function script and Job Template steps (Copado UI; see <code>copado-functions/</code>)</li>
+      <li>Publisher Layout assignment for the Global Action</li>
+    </ul>
+
+    <h2>7. Summary for leadership</h2>
+    <table>
+      <thead>
+        <tr><th>Topic</th><th>Answer</th></tr>
+      </thead>
+      <tbody>
+        <tr><td>How it started</td><td>Product brief + Cursor prompt → SFDX POC with mock AI, then live Copado AI + Job Templates</td></tr>
+        <tr><td>Where code lives</td><td>Local git repo (<code>force-app</code>); not developed only in the org</td></tr>
+        <tr><td>What we deploy</td><td>Salesforce metadata (objects, Apex, LWC, credential shells, perms, app) + separate Copado Function/templates</td></tr>
+        <tr><td>How we push today</td><td>Scripted MDAPI zips → Workbench (schema, then code)</td></tr>
+        <tr><td>How we can push later</td><td>Salesforce CLI, GitHub Actions, or Copado promotions of the same source</td></tr>
+      </tbody>
+    </table>
+
+    <footer>
+      Related runbooks: <code>DEPLOY.md</code>, <code>DEMO.md</code>, <code>copado-functions/PREFLIGHT.md</code>.
+      <br />Document prepared for internal use — Copado Builder POC process overview.
+    </footer>
+  </article>
+</body>
+</html>

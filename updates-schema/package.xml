@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<Package xmlns="http://soap.sforce.com/2006/04/metadata">
+    <types>
+        <members>AI_Builder_Action__c</members>
+        <members>AI_Builder_Session__c</members>
+        <members>Copado_Builder_User_Preference__c</members>
+        <members>Copado_Builder_User_Secret__c</members>
+        <members>Copado_Builder_Auth__c</members>
+        <members>Copado_Builder_Settings__mdt</members>
+        <name>CustomObject</name>
+    </types>
+    <types>
+        <members>Copado_Builder_Settings__mdt-Copado Builder Settings Layout</members>
+        <name>Layout</name>
+    </types>
+    <types>
+        <members>Copado_AI_API_Key</members>
+        <name>ExternalCredential</name>
+    </types>
+    <version>62.0</version>
+</Package>

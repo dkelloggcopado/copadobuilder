@@ -1,0 +1,762 @@
+<template>
+  <div class={rootClass}>
+    <div class="builder-toolbar">
+      <div class="builder-brand" lwc:if={showBrandChrome}>
+        <lightning-icon icon-name="custom:custom63" size="small"></lightning-icon>
+        <span class="builder-brand-title">Copado Builder</span>
+      </div>
+      <div class="builder-toolbar-actions">
+        <lightning-button
+          lwc:if={isCompact}
+          label={chatsToggleLabel}
+          onclick={toggleChatsPanel}
+          disabled={isLoading}
+        ></lightning-button>
+        <lightning-button
+          lwc:if={isCompact}
+          label={statusToggleLabel}
+          onclick={toggleStatusPanel}
+          disabled={isLoading}
+        ></lightning-button>
+        <lightning-button
+          label="New Chat"
+          onclick={handleNewChat}
+          disabled={isLoading}
+        ></lightning-button>
+      </div>
+    </div>
+
+    <div class={shellClass}>
+    <div class={layoutClass}>
+      <!-- Previous chats for current user -->
+      <div class="chats-panel" lwc:if={showChatsPanel}>
+        <h3 class="panel-title">My Chats</h3>
+        <p class="chats-subtitle" lwc:if={showBrandChrome}>Your previous conversations</p>
+
+        <template lwc:if={hasChatSessions}>
+          <template for:each={chatSessionsView} for:item="chat">
+            <div key={chat.sessionId} class={chat.itemClass}>
+              <button
+                type="button"
+                class="chat-item-main"
+                data-id={chat.sessionId}
+                onclick={handleOpenChat}
+                disabled={isLoading}
+              >
+                <span class="chat-item-name">{chat.name}</span>
+                <span class="chat-item-preview">{chat.preview}</span>
+                <span class="chat-item-meta">
+                  <span>{chat.status}</span>
+                  <span>{chat.score}%</span>
+                </span>
+              </button>
+              <button
+                type="button"
+                class="chat-item-delete"
+                data-id={chat.sessionId}
+                data-name={chat.name}
+                onclick={handleDeleteChat}
+                disabled={isLoading}
+                title="Delete chat"
+                aria-label="Delete chat"
+              >
+                ×
+              </button>
+            </div>
+          </template>
+        </template>
+        <template lwc:else>
+          <p class="chats-empty">No previous chats yet. Start typing to begin.</p>
+        </template>
+      </div>
+
+      <!-- Main chat area -->
+      <div class="chat-panel">
+        <div class="chat-header" lwc:if={showChatHeader}>
+          <h2 class="chat-title">What do you want to build?</h2>
+          <p class="chat-subtitle">Describe a fix, feature, or paste a transcript. I'll help shape it into a Copado story.</p>
+        </div>
+
+        <div class="chat-messages" lwc:dom="manual"></div>
+      </div>
+
+      <!-- Right status panel -->
+      <div class="status-panel" lwc:if={showStatusPanel}>
+        <div class="status-panel-header">
+          <h3 class="panel-title">Status</h3>
+        </div>
+
+        <template lwc:if={hasStory}>
+          <div class="status-block linked-story-block">
+            <div class="status-item linked-story-header-row">
+              <span class="status-label">Linked Story</span>
+              <div class="linked-story-value-row">
+                <a
+                  class="story-hotlink"
+                  href="#"
+                  title="Open Copado User Story in a new tab"
+                  onclick={handleOpenLinkedStory}
+                >{linkedStoryNumber}</a>
+                <lightning-button-icon
+                  lwc:if={canEditLinkedStory}
+                  icon-name="utility:edit"
+                  alternative-text="Change story"
+                  title="Switch to a different Copado User Story"
+                  variant="border-filled"
+                  size="x-small"
+                  onclick={handleStartStoryEdit}
+                  disabled={isLoading}
+                ></lightning-button-icon>
+              </div>
+            </div>
+            <template lwc:if={showLinkedStoryTitle}>
+              <p class="status-detail-text">{linkedStoryTitle}</p>
+            </template>
+
+            <div class="linked-story-editor" lwc:if={isChangingStory}>
+              <lightning-input
+                label="Search"
+                variant="label-hidden"
+                placeholder="Search by US name or title"
+                value={storySearchTerm}
+                onchange={handleStorySearchChange}
+                onkeydown={handleStorySearchKeyDown}
+              ></lightning-input>
+              <div class="story-actions">
+                <lightning-button
+                  label="Search"
+                  onclick={handleStorySearch}
+                  disabled={isLoading}
+                ></lightning-button>
+                <lightning-button
+                  label="Use Story"
+                  variant="brand"
+                  onclick={handleUseExistingStory}
+                  disabled={isUseStoryDisabled}
+                  title="Link this Copado story without changing its fields"
+                ></lightning-button>
+                <lightning-button
+                  label="Cancel"
+                  variant="neutral"
+                  onclick={handleCancelStoryEdit}
+                  disabled={isLoading}
+                ></lightning-button>
+              </div>
+              <lightning-combobox
+                data-id="existing-story-combo"
+                label="Results"
+                variant="label-hidden"
+                placeholder="Select a Copado User Story"
+                value={selectedUserStoryId}
+                options={userStoryOptions}
+                onchange={handleUserStoryChange}
+              ></lightning-combobox>
+              <p class="env-help">
+                Links this chat to the story for Build / Deploy. Does not overwrite Copado fields.
+              </p>
+            </div>
+          </div>
+        </template>
+
+        <div class="org-select linked-story-link-block" lwc:if={showLinkStoryPicker}>
+          <span class="status-label field-control-label">Link a Copado Story</span>
+          <lightning-input
+            label="Search"
+            variant="label-hidden"
+            placeholder="Search by US name or title"
+            value={storySearchTerm}
+            onchange={handleStorySearchChange}
+            onkeydown={handleStorySearchKeyDown}
+          ></lightning-input>
+          <div class="story-actions">
+            <lightning-button
+              label="Search"
+              onclick={handleStorySearch}
+              disabled={isLoading}
+            ></lightning-button>
+            <lightning-button
+              label="Use Story"
+              variant="brand"
+              onclick={handleUseExistingStory}
+              disabled={isUseStoryDisabled}
+              title="Link this Copado story without changing its fields"
+            ></lightning-button>
+          </div>
+          <lightning-combobox
+            data-id="existing-story-combo"
+            label="Results"
+            variant="label-hidden"
+            placeholder="Select a Copado User Story"
+            value={selectedUserStoryId}
+            options={userStoryOptions}
+            onchange={handleUserStoryChange}
+          ></lightning-combobox>
+          <p class="env-help">
+            Links this chat to the story for Build / Deploy. Does not overwrite Copado fields —
+            use Improve Story for that.
+          </p>
+        </div>
+
+        <div class="status-item">
+          <span class="status-label">Story Score</span>
+          <span class={scoreClass}>{scoreDisplay}</span>
+        </div>
+
+        <div class="status-item">
+          <span class="status-label">Current Step</span>
+          <span class="status-value">{currentStep}</span>
+        </div>
+
+        <div class="status-item">
+          <span class="status-label">Missing Info</span>
+          <span class="status-value">{missingInfoDisplay}</span>
+        </div>
+
+        <div class="org-select" lwc:if={showProjectSelect}>
+          <span class="status-label field-control-label">Copado Project</span>
+          <lightning-combobox
+            label="Copado Project"
+            variant="label-hidden"
+            placeholder="Select the project for this story"
+            value={selectedProjectId}
+            options={projectOptions}
+            onchange={handleProjectChange}
+          ></lightning-combobox>
+          <p class="env-help">{projectHelpText}</p>
+        </div>
+
+        <div class="org-context-block" lwc:if={showOrgSelect}>
+          <div class="status-item org-context-header">
+            <span class="status-label">Org Context</span>
+            <div class="org-context-value-row">
+              <template lwc:if={showOrgContextEditor}>
+                <lightning-combobox
+                  class="org-context-inline-env"
+                  label="Dev Org Credential"
+                  variant="label-hidden"
+                  placeholder="Select credential you own"
+                  value={selectedOrgId}
+                  options={orgOptions}
+                  onchange={handlePendingOrgChange}
+                  disabled={orgSelectDisabled}
+                ></lightning-combobox>
+                <lightning-button-icon
+                  lwc:if={showCancelOrgContextEdit}
+                  class="org-context-edit-icon"
+                  icon-name="utility:close"
+                  alternative-text="Cancel"
+                  title="Cancel credential change"
+                  variant="bare"
+                  size="x-small"
+                  onclick={handleCancelOrgContextEdit}
+                  disabled={isLoading}
+                ></lightning-button-icon>
+              </template>
+              <template lwc:else>
+                <span
+                  class={orgContextStatusClass}
+                  title={orgContextTitle}
+                >{orgContextDisplay}</span>
+                <lightning-button-icon
+                  class="org-context-edit-icon"
+                  icon-name="utility:edit"
+                  alternative-text="Change org credential"
+                  title="Select a different Dev Org Credential you own"
+                  variant="bare"
+                  size="x-small"
+                  onclick={handleStartOrgContextEdit}
+                  disabled={isLoading}
+                ></lightning-button-icon>
+              </template>
+            </div>
+          </div>
+
+          <div class="org-context-actions" lwc:if={showOrgContextActionButtons}>
+            <lightning-button
+              label="Edit PAT"
+              variant="neutral"
+              onclick={handleUpdateCopadoAiToken}
+              disabled={isLoading}
+              title="Paste or update your personal Copado AI Access Token (per-user PAT)"
+            ></lightning-button>
+            <lightning-button
+              label="Update OI"
+              variant="brand"
+              onclick={handleConnectOrgIntelligence}
+              disabled={isOrgIntelligenceDisabled}
+              title={orgIntelligenceButtonTitle}
+            ></lightning-button>
+          </div>
+
+          <template lwc:if={showOrgContextEditor}>
+            <div class="org-context-editor">
+              <template lwc:if={showIntegrationSelect}>
+                <span class="status-label field-control-label">Copado AI Integration</span>
+                <lightning-combobox
+                  label="Copado AI Integration"
+                  variant="label-hidden"
+                  placeholder="Select connection (e.g. User Level)"
+                  value={selectedIntegrationId}
+                  options={integrationOptions}
+                  onchange={handleIntegrationChange}
+                  disabled={isLoading}
+                ></lightning-combobox>
+              </template>
+              <lightning-input
+                lwc:if={selectedOrgId}
+                type="checkbox"
+                label="Remember as my default"
+                checked={rememberEnvironment}
+                onchange={handleRememberEnvironmentChange}
+              ></lightning-input>
+              <p class="env-help" lwc:if={environmentHelpText}>{environmentHelpText}</p>
+            </div>
+          </template>
+        </div>
+
+        <div class="status-jobs-section">
+        <div class="status-item status-item_pipeline">
+          <span class="status-label">Build</span>
+          <div class="status-icon-cell">
+            <button
+              type="button"
+              class={buildStatusIconButtonClass}
+              title={buildStatusIconTitle}
+              aria-label={buildStatusAriaLabel}
+              disabled={buildStatusIconDisabled}
+              onclick={handleBuildStatusIconClick}
+            >
+              <lightning-icon
+                icon-name={buildStatusIconName}
+                size="x-small"
+                alternative-text={buildStepStatus}
+                class={buildStatusIconClass}
+              ></lightning-icon>
+            </button>
+          </div>
+        </div>
+
+        <div class="status-item status-item_pipeline">
+          <span class="status-label">Deploy</span>
+          <div class="status-icon-cell">
+            <button
+              type="button"
+              class={deployStatusIconButtonClass}
+              title={deployStatusIconTitle}
+              aria-label={deployStatusAriaLabel}
+              disabled={deployStatusIconDisabled}
+              onclick={handleDeployStatusIconClick}
+            >
+              <lightning-icon
+                icon-name={deployStatusIconName}
+                size="x-small"
+                alternative-text={deployStepStatus}
+                class={deployStatusIconClass}
+              ></lightning-icon>
+            </button>
+          </div>
+        </div>
+
+          <div class="status-item status-item_pipeline">
+            <span class="status-label">Commit</span>
+            <div class="status-icon-cell">
+              <button
+                type="button"
+                class={commitStatusIconButtonClass}
+                title={commitStatusIconTitle}
+                aria-label={commitStatusAriaLabel}
+                disabled={commitStatusIconDisabled}
+                onclick={handleCommitStatusIconClick}
+              >
+                <lightning-icon
+                  icon-name={commitStatusIconName}
+                  size="x-small"
+                  alternative-text={commitStepStatus}
+                  class={commitStatusIconClass}
+                ></lightning-icon>
+              </button>
+            </div>
+          </div>
+
+          <div class="status-item status-item_pipeline">
+            <span class="status-label">Validate</span>
+            <div class="status-icon-cell">
+              <button
+                type="button"
+                class={validateStatusIconButtonClass}
+                title={validateStatusIconTitle}
+                aria-label={validateStatusAriaLabel}
+                disabled={validateStatusIconDisabled}
+                onclick={handleValidateStatusIconClick}
+              >
+                <lightning-icon
+                  icon-name={validateStatusIconName}
+                  size="x-small"
+                  alternative-text={validateStepStatus}
+                  class={validateStatusIconClass}
+                ></lightning-icon>
+              </button>
+            </div>
+          </div>
+
+        <div class="status-item status-item_pipeline">
+          <span class="status-label">{nextDeployStatusLabel}</span>
+          <div class="status-icon-cell">
+            <button
+              type="button"
+              class={nextDeployStatusIconButtonClass}
+              title={nextDeployStatusIconTitle}
+              aria-label={nextDeployStatusAriaLabel}
+              disabled={nextDeployStatusIconDisabled}
+              onclick={handleNextDeployStatusIconClick}
+            >
+              <lightning-icon
+                icon-name={nextDeployStatusIconName}
+                size="x-small"
+                alternative-text={nextDeployStepStatus}
+                class={nextDeployStatusIconClass}
+              ></lightning-icon>
+            </button>
+          </div>
+        </div>
+
+        <template lwc:if={nextEnvironmentName}>
+          <div class="status-item">
+            <span class="status-label">Next Env</span>
+            <span class="status-value status-value_nowrap">{nextEnvironmentName}</span>
+          </div>
+        </template>
+
+        <template lwc:if={hasBuildArtifacts}>
+          <div class="status-block status-block_artifacts">
+            <button
+              type="button"
+              class="artifacts-toggle"
+              title={artifactsToggleTitle}
+              aria-expanded={artifactsExpanded}
+              onclick={handleToggleArtifacts}
+            >
+              <span class="status-label">Artifacts</span>
+              <span class="artifacts-toggle-meta">
+                <span class="status-value status-value_nowrap">{artifactsOneLine}</span>
+                <lightning-icon
+                  class="artifacts-chevron"
+                  icon-name={artifactsChevronIcon}
+                  size="xx-small"
+                  alternative-text={artifactsToggleTitle}
+                ></lightning-icon>
+              </span>
+            </button>
+            <template lwc:if={artifactsExpanded}>
+              <ul class="artifact-list">
+                <template for:each={artifactItems} for:item="item">
+                  <li key={item.key} title={item.path}>{item.name}</li>
+                </template>
+              </ul>
+            </template>
+            <template lwc:if={artifactsAreStale}>
+              <p class="status-detail-text status-warning status-warning_inline">Stale — click Build</p>
+            </template>
+          </div>
+        </template>
+
+        <template lwc:if={showPipelineErrorPanel}>
+          <div class="status-item">
+            <span class="status-label">{pipelineErrorLabel}</span>
+            <template lwc:if={hasPipelineErrorRecordLink}>
+              <a
+                class={jobStatusLinkClass}
+                href="#"
+                title={pipelineErrorLinkTitle}
+                onclick={handleOpenPipelineError}
+              >Failed</a>
+            </template>
+            <template lwc:else>
+              <span class={jobStatusClass}>Failed</span>
+            </template>
+          </div>
+          <template lwc:if={pipelineErrorDetail}>
+            <div class="status-block">
+              <span class="status-label">{pipelineErrorDetailLabel}</span>
+              <pre class="status-detail-text status-error-pre">{pipelineErrorDetail}</pre>
+              <div class="status-block-actions">
+                <lightning-button
+                  label="Copy error"
+                  variant="neutral"
+                  title="Copy the deployment error to the clipboard"
+                  onclick={handleCopyPipelineError}
+                ></lightning-button>
+                <lightning-button
+                  class="slds-m-left_x-small"
+                  label="Paste into chat"
+                  variant="brand"
+                  title="Put a fix-it prompt with this error into the chat box"
+                  onclick={handlePastePipelineErrorIntoChat}
+                ></lightning-button>
+              </div>
+            </div>
+          </template>
+        </template>
+
+        <template lwc:if={showLinkCommitButton}>
+          <div class="status-item story-actions">
+            <lightning-button
+              label="Link commit to story"
+              variant="neutral"
+              disabled={isRefreshJobDisabled}
+              onclick={handleLinkUserStoryCommit}
+              title="Retry linking User Story Commit when auto-link failed after the Copado job"
+            ></lightning-button>
+          </div>
+        </template>
+        </div>
+
+      </div>
+    </div>
+    </div>
+
+    <!-- Composer stays outside the scrolling transcript so it never gets clipped. -->
+    <div class="composer-dock">
+      <div class="chat-input-area">
+        <lightning-textarea
+          label="Your message"
+          variant="label-hidden"
+          placeholder="What are you trying to fix or build?"
+          value={inputMessage}
+          onchange={handleInputChange}
+          onkeydown={handleKeyDown}
+          class="chat-textarea"
+        ></lightning-textarea>
+        <template lwc:if={isLoading}>
+          <lightning-button
+            label="Stop"
+            variant="neutral"
+            onclick={handleStopWaiting}
+            class="send-btn"
+          ></lightning-button>
+        </template>
+        <template lwc:else>
+          <lightning-button
+            label="Send"
+            variant="brand"
+            onclick={handleSend}
+            class="send-btn"
+          ></lightning-button>
+        </template>
+      </div>
+
+      <div class="action-bar">
+        <lightning-button
+          label="Improve Story"
+          onclick={handleImproveStory}
+          disabled={isLoading}
+        ></lightning-button>
+        <lightning-button
+          label="Create Story"
+          variant="brand"
+          onclick={handleCreateStory}
+          disabled={isCreateStoryDisabled}
+        ></lightning-button>
+        <lightning-button
+          label="Build"
+          onclick={handleBuildCode}
+          disabled={isBuildDisabled}
+          title="Generate metadata package for the linked story (no deploy or commit)"
+        ></lightning-button>
+        <lightning-button
+          label={deployButtonLabel}
+          onclick={handleDeployClick}
+          disabled={isDeployDisabled}
+          title="Deploy the Build package into the selected Dev org only"
+        ></lightning-button>
+        <lightning-button
+          label="Commit"
+          variant="success"
+          onclick={handleCommitClick}
+          disabled={isCommitDisabled}
+          title="Commit from Dev to the user story (requires successful Deploy)"
+        ></lightning-button>
+        <lightning-button
+          label={validateButtonLabel}
+          onclick={handleValidateClick}
+          disabled={isValidateDisabled}
+          title="Validate Changes to the next pipeline environment (dry-run; requires successful Commit)"
+        ></lightning-button>
+        <lightning-button
+          label={deployNextButtonLabel}
+          variant="brand"
+          onclick={handleDeployNextClick}
+          disabled={isDeployNextDisabled}
+          title="Deploy validated changes to the next pipeline environment (real deploy, not dry-run)"
+        ></lightning-button>
+        <lightning-button
+          label="Check deployment"
+          onclick={handleCheckDeployment}
+          disabled={isCheckDeploymentDisabled}
+          title="Ask Build Agent to verify story artifacts exist in the current User Story environment"
+        ></lightning-button>
+      </div>
+    </div>
+
+    <div class="builder-confirm-overlay" lwc:if={setupOpen} role="presentation">
+      <div
+        class="builder-confirm-card builder-setup-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="builder-setup-title"
+        onclick={handleConfirmCardClick}
+      >
+        <div class="builder-confirm-header">
+          <h2 id="builder-setup-title" class="builder-confirm-title">Set up Copado Builder</h2>
+          <div class="builder-setup-progress" aria-label={setupProgressLabel}>
+            <div class="builder-setup-progress-meta">
+              <span class="builder-setup-progress-step">{setupProgressLabel}</span>
+              <span class="builder-setup-progress-title">{setupProgressTitle}</span>
+            </div>
+            <div class="builder-setup-progress-track">
+              <div class="builder-setup-progress-fill" style={setupProgressStyle}></div>
+            </div>
+          </div>
+        </div>
+        <div class="builder-confirm-body">
+          <template lwc:if={isSetupStep1}>
+            <p class="builder-confirm-message">
+              Step 1: paste your own Copado AI Personal Access Token and choose your Copado Project.
+              Next we’ll load integrations for that token.
+            </p>
+            <div class="builder-setup-fields">
+              <lightning-input
+                type="password"
+                label="Copado AI Personal Access Token"
+                value={setupPat}
+                onchange={handleSetupPatChange}
+                oncommit={handleSetupPatChange}
+                disabled={setupSaving}
+                required
+              ></lightning-input>
+              <p class="builder-confirm-option-help">{setupPatHelpText}</p>
+              <lightning-combobox
+                label="Copado Project"
+                placeholder="Select project"
+                value={setupProjectId}
+                options={projectOptions}
+                onchange={handleSetupProjectChange}
+                disabled={setupSaving}
+              ></lightning-combobox>
+            </div>
+          </template>
+
+          <template lwc:if={isSetupStep2}>
+            <p class="builder-confirm-message">
+              Step 2: pick your personal Copado AI Integration (User Level).
+              Or bypass and chat now — you can set Integration later for Org Context / Deploy.
+            </p>
+            <div class="builder-setup-status" lwc:if={setupStatusMessage} role="status">
+              <lightning-spinner
+                lwc:if={setupLoadingIntegrations}
+                alternative-text="Loading"
+                size="small"
+              ></lightning-spinner>
+              <span>{setupStatusMessage}</span>
+            </div>
+            <div class="builder-setup-fields">
+              <lightning-combobox
+                label="Copado AI Integration"
+                placeholder="Select your User Level integration"
+                value={setupIntegrationId}
+                options={integrationOptions}
+                onchange={handleSetupIntegrationChange}
+                disabled={isSetupIntegrationDisabled}
+              ></lightning-combobox>
+              <p class="builder-confirm-option-help">
+                Name your Copado AI integration after yourself (e.g. User Level — Your Name),
+                then Connect your Org Credential in the Copado AI Platform Settings panel.
+              </p>
+              <lightning-button
+                lwc:if={setupIntegrationEmpty}
+                label="Retry lookup"
+                variant="neutral"
+                onclick={handleSetupRetryIntegrations}
+                disabled={isSetupRetryDisabled}
+              ></lightning-button>
+            </div>
+          </template>
+        </div>
+        <div class="builder-confirm-actions">
+          <template lwc:if={isSetupStep1}>
+            <lightning-button
+              label="Continue"
+              variant="brand"
+              onclick={handleSetupContinue}
+              disabled={isSetupContinueDisabled}
+              title="Save token and project, then load your Copado AI integrations"
+            ></lightning-button>
+          </template>
+          <template lwc:if={isSetupStep2}>
+            <lightning-button
+              label="Back"
+              variant="neutral"
+              onclick={handleSetupBack}
+              disabled={isSetupBackDisabled}
+            ></lightning-button>
+            <lightning-button
+              label="Bypass — just chat"
+              variant="neutral"
+              onclick={handleSetupBypass}
+              disabled={isSetupBypassDisabled}
+              title="Skip Integration for now. Token and Project are already saved."
+            ></lightning-button>
+            <lightning-button
+              label="Save and continue"
+              variant="brand"
+              onclick={handleSetupSave}
+              disabled={isSetupSaveDisabled}
+            ></lightning-button>
+          </template>
+        </div>
+      </div>
+    </div>
+
+    <div class="builder-confirm-overlay" lwc:if={confirmOpen} role="presentation" onclick={handleConfirmBackdropClick}>
+      <div
+        class="builder-confirm-card"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="builder-confirm-title"
+        onclick={handleConfirmCardClick}
+      >
+        <div class="builder-confirm-header">
+          <h2 id="builder-confirm-title" class="builder-confirm-title">{confirmTitle}</h2>
+        </div>
+        <div class="builder-confirm-body">
+          <p class="builder-confirm-message">{confirmMessage}</p>
+          <div class="builder-confirm-option" lwc:if={isConfirmCommitVariant}>
+            <lightning-input
+              type="toggle"
+              label="Recreate feature branch"
+              checked={confirmRecreateFeatureBranch}
+              onchange={handleConfirmRecreateChange}
+              message-toggle-active="On"
+              message-toggle-inactive="Off"
+            ></lightning-input>
+            <p class="builder-confirm-option-help">
+              Deletes the existing feature branch, creates a fresh one from the pipeline base
+              (e.g. main), then commits. Old User Story Commit rows stay; a new row is added.
+            </p>
+          </div>
+        </div>
+        <div class="builder-confirm-actions">
+          <lightning-button
+            label="Cancel"
+            onclick={handleConfirmCancel}
+          ></lightning-button>
+          <lightning-button
+            label={confirmConfirmLabel}
+            variant={confirmPrimaryVariant}
+            onclick={handleConfirmOk}
+          ></lightning-button>
+        </div>
+      </div>
+    </div>
+  </div>
+</template>

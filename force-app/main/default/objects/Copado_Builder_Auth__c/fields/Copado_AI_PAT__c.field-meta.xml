@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Copado_AI_PAT__c</fullName>
+    <description>Copado AI Personal Access Token for the running Salesforce user. Never return this value to the browser after save.</description>
+    <externalId>false</externalId>
+    <inlineHelpText>Create a Personal Access Token in the Copado AI Platform for your own account. Do not use a teammate&apos;s token.</inlineHelpText>
+    <label>Copado AI PAT</label>
+    <length>255</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

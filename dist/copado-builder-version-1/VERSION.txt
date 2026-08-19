@@ -1,0 +1,4 @@
+Copado Builder Version 1
+Built: 2026-07-23T13:41:44Z
+Experience: Build + combined Deploy-Then-Commit (builder_deploy_then_commit)
+Source: force-app + copado-functions (frozen at build time)

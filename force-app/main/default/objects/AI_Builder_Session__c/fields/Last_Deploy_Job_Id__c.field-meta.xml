@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Last_Deploy_Job_Id__c</fullName>
+    <description>Last Copado Job Execution Id from Builder Deploy (package to Dev).</description>
+    <externalId>false</externalId>
+    <label>Last Deploy Job Id</label>
+    <length>80</length>
+    <required>false</required>
+    <trackTrending>false</trackTrending>
+    <type>Text</type>
+    <unique>false</unique>
+</CustomField>

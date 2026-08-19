@@ -1,0 +1,9 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<CustomField xmlns="http://soap.sforce.com/2006/04/metadata">
+    <fullName>Copado_AI_PAT__c</fullName>
+    <description>Copado AI Personal Access Token for this Salesforce user. Long Text — Hierarchy Custom Settings are limited to 255 chars.</description>
+    <label>Copado AI PAT</label>
+    <length>32768</length>
+    <type>LongTextArea</type>
+    <visibleLines>3</visibleLines>
+</CustomField>
