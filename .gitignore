@@ -6,3 +6,15 @@ node_modules/
 *.log
 .env
 .auth/
+
+# Generated packaging outputs (do not track)
+dist/
+mdapi-deploy/
+updates-code/
+updates-only/
+updates-schema/
+updates-utility/
+updates-global-action/
+remove-global-action-pkg/
+remove-utility-bar-pkg/
+copado-builder-*.zip

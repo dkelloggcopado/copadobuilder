@@ -1,9 +1,0 @@
-Copado Builder — install kit
-============================
-
-1. Open INSTALL.md and follow the steps in order.
-2. Deploy ONE Salesforce zip: salesforce/copado-builder-mdapi.zip
-3. Copado Function files are in copado-functions/ (manual setup in Copado —
-   not a Salesforce zip).
-4. Finish every manual step in INSTALL.md (API key, settings, Function,
-   Job Templates, Publisher Layout, Copado AI User Level).

@@ -42,3 +42,11 @@ Incremental update zips (safer for orgs that already have Builder):
 - Source lives under `force-app/main/default/`
 - Older deploy notes: [DEPLOY.md](DEPLOY.md)
 - Function details: [copado-functions/README.md](copado-functions/README.md)
+
+## DevOps Exchange publishing docs
+
+- Listing draft: [`EXCHANGE-LISTING.md`](EXCHANGE-LISTING.md)
+- Setup guide: [`docs/SETUP-GUIDE.md`](docs/SETUP-GUIDE.md)
+- Upgrade guide: [`docs/UPGRADE-GUIDE.md`](docs/UPGRADE-GUIDE.md)
+- User guide: [`docs/USER-GUIDE.md`](docs/USER-GUIDE.md)
+- Submission checklist: [`docs/DEVOPS-EXCHANGE-SUBMISSION-CHECKLIST.md`](docs/DEVOPS-EXCHANGE-SUBMISSION-CHECKLIST.md)
